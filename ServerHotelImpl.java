@@ -2,8 +2,10 @@ import java.rmi.*;
 import java.rmi.server.*;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.FileNotFoundExcpetion;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Scanner;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.ArrayList;
@@ -28,31 +30,27 @@ public class ServerHotelImpl extends UnicastRemoteObject implements ServerHotelI
         return "User registered sucefully!";
     }
 
-    public boolean verify_user(String email) {
+    public boolean verify_user(String email) throws IOException {
 
-        try {
+        Scanner readDb = new Scanner("user.txt");
 
-            Scanner readDb = new Scanner("user.txt");
+        while(readDb.hasNextLine()) {
+            String data = readDb.nextLine();
+            String emailUser = data.split(";")[0];
 
-            while(readDb.hasNextLine()) {
-                String data = readDb.nextLine();
-                String emailUser = data.split(";")[0];
-
-                if(email.equals(emailUser)) {
-                    return true;
-                }
+            if(email.equals(emailUser)) {
+                readDb.close();
+                return true;
             }
-
-            readDb.close();
-        } catch(FileNotFoundExcpetion e) {
-            System.out.println("Exception: " + e);
         }
+
+        readDb.close();
 
         return false;
     }
 
 
-    public String list_rooms(String dataInicialProposta, String dataFinalProposta){        
+    public ArrayList<String> list_rooms(String dataInicialProposta, String dataFinalProposta){        
 
         ArrayList<String> list_rooms = new ArrayList<String>();
 
@@ -72,16 +70,16 @@ public class ServerHotelImpl extends UnicastRemoteObject implements ServerHotelI
                 Date data_final_quarto = new SimpleDateFormat("dd/MM/yyyy").parse(data.split(";")[2]); 
 
                 // compare dates 
-                if(data_inical.after(data_inicial_quarto) && data_final.before(data_final_quarto) && isBooked.equals("nao-reservado")) {
+                if(data_inicial.after(data_inicial_quarto) && data_final.before(data_final_quarto) && isBooked.equals("nao-reservado")) {
                     list_rooms.add(data.split(";")[0]);
                 } 
             }
 
             readDb.close();
 
-        } catch(FileNotFoundExcpetion e) {
+        } catch(ParseException e) {
             System.out.println("Exception: " + e);
-        }
+        } 
 
         return list_rooms;
     }
@@ -118,13 +116,13 @@ public class ServerHotelImpl extends UnicastRemoteObject implements ServerHotelI
 
             // delete rooms.txt file and rename the temporary file to rooms.txt
             File file_to_delete = new File("rooms.txt");
-            file_to_delete.delete();
 
-            temporary_file.renameTo("rooms.txt");
+            temporary_file.renameTo(file_to_delete);
+            file_to_delete.delete();
 
             return "Room canceled sucefully!";
             
-        } catch(FileNotFoundExcpetion e) {
+        } catch(FileNotFoundException e) {
             System.out.println("Exception: " + e);
         } catch(IOException e) {
             System.out.println("Exception: " + e);
