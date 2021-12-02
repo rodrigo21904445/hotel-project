@@ -97,6 +97,48 @@ public class ServerHotelImpl extends UnicastRemoteObject implements ServerHotelI
 
     public String book_room(int id, String dataInicialReserva, String dataFinalReserva) throws RemoteException {
         
+        try {
+            File temporary_file = new File("book_temporary_file.txt");
+            FileWriter write_temporary_file = new FileWriter(temporary_file);
+
+            Scanner readDb = new Scanner(this.rooms_file);
+
+            int isFirstLine = 0;
+            String edit_room_line = "";
+
+            while(readDb.hasNextLine()) {
+                String data = readDb.nextLine();
+                String numRoom = data.split(";")[0];
+
+                if(Integer.parseInt(numRoom) == id)  {
+                    
+                    // in case of the room is in the first line of the file, it doesnt put a new line in the beggining of the sentence
+                    if(isFirstLine != 0) {
+                        edit_room_line = "\n" + data.split(";")[0] + ";" + data.split(";")[1] + ";" + data.split(";")[2] + ";reservado\n";
+                    } else {
+                        edit_room_line = data.split(";")[0] + ";" + data.split(";")[1] + ";" + data.split(";")[2] + ";reservado\n";
+                    }
+                                        
+                    write_temporary_file.write(edit_room_line);                                    
+                } else {
+                    write_temporary_file.write(data);
+                }
+                
+                isFirstLine++;
+            }
+
+            temporary_file.renameTo(this.rooms_file);
+            this.rooms_file = temporary_file;
+
+            temporary_file.delete();
+        
+            write_temporary_file.close();
+            readDb.close();
+
+            return "Room booked sucefully!";
+        } catch(IOException e) {
+            System.out.println("Exception: " + e);
+        }        
 
         return "Couldnt booked room.";
     }
@@ -104,47 +146,48 @@ public class ServerHotelImpl extends UnicastRemoteObject implements ServerHotelI
     public String cancel_room(int id, String dataInicialReserva, String dataFinalReserva) {
 
         try {
-            
-            File temporary_file = new File("rooms_temporary_file.txt");
-            temporary_file.createNewFile();
-            FileWriter new_file_writer = new FileWriter("rooms_temporary_file.txt");
+            File temporary_file = new File("cancel_temporary_file.txt");
+            FileWriter write_temporary_file = new FileWriter(temporary_file);
 
-            Scanner readDb = new Scanner("rooms.txt");
-            // FileWriter dbWriter = new FileWriter("user.txt");
+            Scanner readDb = new Scanner(this.rooms_file);
+
+            int isFirstLine = 0;
+            String edit_room_line = "";
 
             while(readDb.hasNextLine()) {
                 String data = readDb.nextLine();
                 String numRoom = data.split(";")[0];
 
-                if(Integer.parseInt(numRoom) == id) {
+                if(Integer.parseInt(numRoom) == id)  {
                     
-                    // change room "reservado" to "nao-reservado"
-                    String edit_room_line = data.split(";")[0] + data.split(";")[1] + data.split(";")[2] + "nao-reservado";
-                    new_file_writer.write(edit_room_line);                    
-
+                    // in case of the room is in the first line of the file, it doesnt put a new line in the beggining of the sentence
+                    if(isFirstLine != 0) {
+                        edit_room_line = "\n" + data.split(";")[0] + ";" + data.split(";")[1] + ";" + data.split(";")[2] + ";nao-reservado\n";
+                    } else {
+                        edit_room_line = data.split(";")[0] + ";" + data.split(";")[1] + ";" + data.split(";")[2] + ";nao-reservado\n";
+                    }
+                                        
+                    write_temporary_file.write(edit_room_line);                                    
                 } else {
-                    new_file_writer.write(data);
-                }   
+                    write_temporary_file.write(data);
+                }
+                
+                isFirstLine++;
             }
 
+            temporary_file.renameTo(this.rooms_file);
+            this.rooms_file = temporary_file;
+
+            temporary_file.delete();
+        
+            write_temporary_file.close();
             readDb.close();
-            new_file_writer.close();
-            // dbWriter.close();
-
-            // delete rooms.txt file and rename the temporary file to rooms.txt
-            File file_to_delete = new File("rooms.txt");
-
-            temporary_file.renameTo(file_to_delete);
-            file_to_delete.delete();
 
             return "Room canceled sucefully!";
-            
-        } catch(FileNotFoundException e) {
-            System.out.println("Exception: " + e);
         } catch(IOException e) {
             System.out.println("Exception: " + e);
-        }
+        }        
 
-        return "Room couldnt be canceled.";
+        return "Couldnt cancel room.";
     }
 }
