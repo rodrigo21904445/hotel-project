@@ -11,14 +11,19 @@ import java.util.Date;
 import java.util.ArrayList;
 
 public class ServerHotelImpl extends UnicastRemoteObject implements ServerHotelIntf{
+    File users_file, rooms_file;
 
-    public ServerHotelImpl() throws RemoteException {
+    public ServerHotelImpl() throws RemoteException, IOException {
+        users_file = new File("users.txt");
+        users_file.createNewFile();
+    
+        rooms_file = new File("rooms.txt");
     }
 
     public String register_user(String email, String password) {
 
         try {
-            FileWriter dbWriter = new FileWriter("user.txt");
+            FileWriter dbWriter = new FileWriter(this.users_file);
 
             dbWriter.write(email + ";" + password);
 
@@ -32,7 +37,7 @@ public class ServerHotelImpl extends UnicastRemoteObject implements ServerHotelI
 
     public boolean verify_user(String email) throws IOException {
 
-        Scanner readDb = new Scanner("user.txt");
+        Scanner readDb = new Scanner(this.users_file);
 
         while(readDb.hasNextLine()) {
             String data = readDb.nextLine();
@@ -45,7 +50,6 @@ public class ServerHotelImpl extends UnicastRemoteObject implements ServerHotelI
         }
 
         readDb.close();
-
         return false;
     }
 
@@ -53,24 +57,29 @@ public class ServerHotelImpl extends UnicastRemoteObject implements ServerHotelI
     public ArrayList<String> list_rooms(String dataInicialProposta, String dataFinalProposta){        
 
         ArrayList<String> list_rooms = new ArrayList<String>();
+        list_rooms.add("Rooms available:");
 
         try{
 
-            Scanner readDb = new Scanner("rooms.txt");        
+            Scanner readDb = new Scanner(this.rooms_file);        
 
             while(readDb.hasNextLine()) {  
                 String data = readDb.nextLine();
                 String isBooked = data.split(";")[3];
-                
-                Date data_inicial = new SimpleDateFormat("dd/MM/yyyy").parse(dataInicialProposta);
-                Date data_final = new SimpleDateFormat("dd/MM/yyyy").parse(dataFinalProposta);
 
                 // convert string to date
+                // args 
+                Date data_inicial = new SimpleDateFormat("dd/MM/yyyy").parse(dataInicialProposta);
+                Date data_final = new SimpleDateFormat("dd/MM/yyyy").parse(dataFinalProposta);
+                
+                // dates inside of the file
                 Date data_inicial_quarto = new SimpleDateFormat("dd/MM/yyyy").parse(data.split(";")[1]);
                 Date data_final_quarto = new SimpleDateFormat("dd/MM/yyyy").parse(data.split(";")[2]); 
 
                 // compare dates 
-                if(data_inicial.after(data_inicial_quarto) && data_final.before(data_final_quarto) && isBooked.equals("nao-reservado")) {
+                if((data_inicial.compareTo(data_inicial_quarto) > 0 || data_inicial.compareTo(data_inicial_quarto) == 0) && 
+                    (data_final.compareTo(data_final_quarto) < 0 || data_final.compareTo(data_final_quarto) == 0)&& isBooked.equals("nao-reservado")) {
+                    
                     list_rooms.add(data.split(";")[0]);
                 } 
             }
@@ -79,9 +88,17 @@ public class ServerHotelImpl extends UnicastRemoteObject implements ServerHotelI
 
         } catch(ParseException e) {
             System.out.println("Exception: " + e);
-        } 
+        } catch(FileNotFoundException e) {
+            System.out.println("Exception: " + e);
+        }
 
         return list_rooms;
+    }
+
+    public String book_room(int id, String dataInicialReserva, String dataFinalReserva) throws RemoteException {
+        
+
+        return "Couldnt booked room.";
     }
 
     public String cancel_room(int id, String dataInicialReserva, String dataFinalReserva) {
