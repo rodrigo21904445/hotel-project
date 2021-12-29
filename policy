@@ -1,0 +1,5 @@
+grant {
+	permission java.security.AllPermission;
+	permission java.util.PropertyPermission "*", "read,write";
+	permission java.io.FilePermission "/home/rclj/Documents/compu-distrib/projeto/hotel-project", "write";
+};

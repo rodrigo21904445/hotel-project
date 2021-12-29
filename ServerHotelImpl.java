@@ -15,7 +15,7 @@ public class ServerHotelImpl extends UnicastRemoteObject implements ServerHotelI
 
     public ServerHotelImpl() throws RemoteException, IOException {
         users_file = new File("users.txt");
-        users_file.createNewFile();
+        //users_file.createNewFile();
     
         rooms_file = new File("rooms.txt");
     }
@@ -23,9 +23,9 @@ public class ServerHotelImpl extends UnicastRemoteObject implements ServerHotelI
     public String register_user(String email, String password) {
 
         try {
-            FileWriter dbWriter = new FileWriter(this.users_file);
+            FileWriter dbWriter = new FileWriter(this.users_file, true);
 
-            dbWriter.write(email + ";" + password);
+            dbWriter.write(email + ";" + password + "\n");
 
             dbWriter.close();
         } catch (IOException e){
@@ -116,7 +116,7 @@ public class ServerHotelImpl extends UnicastRemoteObject implements ServerHotelI
                     if(isFirstLine != 0) {
                         edit_room_line = "\n" + data.split(";")[0] + ";" + data.split(";")[1] + ";" + data.split(";")[2] + ";reservado\n";
                     } else {
-                        edit_room_line = data.split(";")[0] + ";" + data.split(";")[1] + ";" + data.split(";")[2] + ";reservado\n";
+                        edit_room_line = "\n" + "\n" + data.split(";")[0] + ";" + data.split(";")[1] + ";" + data.split(";")[2] + ";reservado\n";
                     }
                                         
                     write_temporary_file.write(edit_room_line);                                    
